@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Anime Creation Coach</title>
+  <style>
+    body { margin: 0; font-family: system-ui, sans-serif; background: #0f1020; color: #f5f7fb; }
+    main { max-width: 980px; margin: auto; padding: 32px; }
+    textarea, button { width: 100%; box-sizing: border-box; border-radius: 14px; border: 0; padding: 14px; font-size: 16px; }
+    textarea { min-height: 140px; background: #1b1d33; color: #fff; margin: 16px 0; }
+    button { background: #7c5cff; color: white; font-weight: 700; cursor: pointer; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin: 20px 0; }
+    .card { background: #191b31; border: 1px solid #2b2d49; border-radius: 18px; padding: 18px; }
+    .metric { font-size: 28px; font-weight: 800; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>🎬 Anime Creation Coach</h1>
+    <p>HTML5 frontend for the RAG anime concept API.</p>
+    <textarea id="concept">A high-stakes virtual reality space opera where trapped players govern a starship civilization through game rules.</textarea>
+    <button onclick="analyze()">Analyze concept</button>
+    <section id="output"></section>
+  </main>
+
+  <script>
+    async function analyze() {
+      const concept = document.getElementById('concept').value;
+      const out = document.getElementById('output');
+      out.innerHTML = '<p>Analyzing...</p>';
+      try {
+        const res = await fetch('http://localhost:8000/concept/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ concept, k: 5 })
+        });
+        const data = await res.json();
+        out.innerHTML = `
+          <div class="grid">
+            <div class="card"><p>Concept Score</p><div class="metric">${data.concept_score}/100</div></div>
+            <div class="card"><p>Popularity</p><div class="metric">${data.estimated_popularity}</div></div>
+            <div class="card"><p>Rating</p><div class="metric">${data.estimated_rating}</div></div>
+          </div>
+          <div class="card"><h2>Coach</h2><p>${data.summary}</p></div>
+          <div class="card"><h2>Closest Parallels</h2><pre>${JSON.stringify(data.matches, null, 2)}</pre></div>
+        `;
+      } catch (e) {
+        out.innerHTML = '<p>API error. Start the FastAPI server on localhost:8000.</p>';
+      }
+    }
+  </script>
+</body>
+</html>
